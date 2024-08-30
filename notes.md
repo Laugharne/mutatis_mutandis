@@ -1,3 +1,22 @@
+
+1. préparer cli processing
+    - [X] working directory
+    - [X] préparer mécanisme d'options du cli
+    - [X] `version` & `versions`
+    - [ ] préparer moyen/manière de scanner un projet anchor...
+    - [ ] update `.gitignore`
+    - [ ] check if anchor project, creation dirs & file `init`
+    - [ ] `clear`
+    - [ ] `reset`
+    - [ ] `remove`
+    - [ ] `help`
+2. fichier toml
+
+[X] lib utils.rs
+[X] lib cli.rs
+
+--------
+
 in `.gitignore`file:
 - add `/.mutatis`
 - add `.mutatis.toml`
@@ -5,12 +24,13 @@ in `.gitignore`file:
 
 **Tree:**
 - .mutatis
-  - backup
-  - mutations
-    - m0001
-    - m0002
-    - m....
-  - tmp
+  - /backup
+  - /logs
+  - /mutations
+    - /m0001
+    - /m0002
+    - /m....
+  - /tmp
 
 --------
 
