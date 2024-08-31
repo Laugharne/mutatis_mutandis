@@ -91,7 +91,7 @@ fn cli_options(g: &Globals) -> &Globals {
 
 	}
 
-	println!("\n");
+	//println!("\n");
 	g
 }
 
