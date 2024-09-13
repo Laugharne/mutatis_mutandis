@@ -1,7 +1,11 @@
 //use std::process;
 use std::path::Path;
 use crate::{utils::*, Globals};
-use std::fs::{OpenOptions, read_to_string};
+use std::fs::read_to_string;
+
+use text_colorizer::*;
+
+use std::io::{self, Write};
 
 /// Displays the command-line interface (CLI) help information for the mutatis application.
 ///
@@ -15,6 +19,7 @@ pub fn cli_version() {
 	println!("mutatis {}", env!("CARGO_PKG_VERSION"));
 }
 
+
 pub fn cli_versions() {
 	cli_version();
 	// TODO
@@ -23,6 +28,7 @@ pub fn cli_versions() {
 	shell_call("solana", "-V");
 	shell_call("anchor", "-V");
 }
+
 
 pub fn cli_init(g: &Globals) {
 	cli_name(&g);
@@ -39,8 +45,9 @@ pub fn cli_init(g: &Globals) {
 	let file: String = format!("{}/programs/{}/Cargo.toml", g.fwd, dir_project_name);
 	check_file_exists(&file, "Cargo.toml doesn't exists in programs directory !");
 
-	let git_ignore: String = format!("{}/{}", g.fwd, ".gitignore");
-	check_file_exists(&git_ignore, "No `.gitignore` !?");
+	let git_ignore: &str = ".gitignore";
+	let git_ignore_full_path: String = format!("{}/{}", g.fwd, git_ignore);
+	check_file_exists(&git_ignore_full_path, "No `.gitignore` !?");
 
 	// programs/<project_name>/src/
 	let src_dir: String = format!("{}/programs/{}/src", g.fwd, dir_project_name);
@@ -64,20 +71,73 @@ pub fn cli_init(g: &Globals) {
 
 	// `.gitignore`
 	// sanity check, add '\n' if needed
-	let mut content = read_to_string(&git_ignore).unwrap();
+	let content = read_to_string(&git_ignore_full_path).unwrap();
 	if !content.ends_with('\n') {
-		add_to_txt_file(&git_ignore, "\n");
+		add_to_txt_file(&git_ignore_full_path, "\n");
 	}
 
 	// add content in `.gitignore`
 	let mut nn: u8 = 0;
-	nn += check_and_add_to_txt_file(&git_ignore, "/.mutatis\n");
-	nn += check_and_add_to_txt_file(&git_ignore, "/test-ledger\n");
+	nn += check_and_add_to_txt_file(&git_ignore_full_path, "/.mutatis\n");
+	nn += check_and_add_to_txt_file(&git_ignore_full_path, "/test-ledger\n");
 
-	
+	if nn > 0 {
+		println!("\nAdded {} lines to `.gitignore`", nn);
+	}
+
+	println!("");
+
+	let test_cmd = qa(
+		"Anchor test command",
+		"anchor test --skip-local-validator",
+	);
+
+	let validator_node = qa(
+		"Validator node",
+		"solana-test-validator --reset",
+	);
+
+	let mutation_level = qa(
+		"Mutation level",
+		"1",
+	);
+
+	// 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
+    let ml = mutation_level.parse::<u8>().unwrap_or_else(|_err| {
+		eprintln!("{}{}", IDENT, "Conversion Error, level set to default !".red());
+		1
+	});
+
+	// println!("{}", test_cmd);
+	// println!("{}", validator_node);
+	// println!("{}", ml);
 
 }
 
+
+
+fn qa(question: &str, default: &str) -> String {
+	let d: ColoredString = format!("{}Default: {}", IDENT, default).bright_black();
+	println!("{}", d);
+
+	let q: ColoredString = format!("{}> {}? ", IDENT, question).green();
+	print!("{}", q);
+
+	io::stdout().flush().unwrap();
+	let mut user_intput: String = String::new();
+	io::stdin()
+		.read_line(&mut user_intput)
+		.expect("Error reading user input.");
+	println!("");
+
+	let user_intput = user_intput.trim().to_string();
+	if user_intput.is_empty() {
+		return default.to_owned();
+	}
+
+	user_intput
+}
+
 fn cli_name(g: &Globals) {
-	println!("mutatis {}\n", g.args.get(1).unwrap());
+	println!("mutatis {}", g.args.get(1).unwrap());
 }

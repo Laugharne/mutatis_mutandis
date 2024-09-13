@@ -1,3 +1,6 @@
+/// The line `use std::process;` in Rust is bringing the `process` module from the standard library into
+/// the current scope. This allows you to use functions and types defined in the `process` module
+/// without having to prefix them with `std::process::`.
 use std::process;
 
 use std::env;
