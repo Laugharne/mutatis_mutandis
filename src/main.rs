@@ -10,6 +10,8 @@ use text_colorizer::*;
 pub mod cli;
 use cli::*;//{cli_version,cli_versions, cli_help};
 mod utils;
+mod toml;
+mod default;
 
 #[derive(Debug)]
 #[derive(Clone)]
@@ -67,12 +69,13 @@ fn cli_options(g: &Globals) -> &Globals {
 
 	let options = g.args.get(1);
 
+	// dispatcher
 	match g.args.get(1) {
 		Some(option) => {
 			let option = option.as_str();
 			match option {
 				"init"     => { cli_init(&g)},
-				"analyze"  => {},
+				"analyze"  => { cli_analyze(&g)},
 				"run"      => {},
 				"reset"    => {},
 				"clear"    => {},

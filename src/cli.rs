@@ -1,11 +1,17 @@
 //use std::process;
 use std::path::Path;
-use crate::{utils::*, Globals};
+use crate::{
+	utils::*,
+	toml::*,
+	default::*,
+	Globals
+};
 use std::fs::read_to_string;
 
 use text_colorizer::*;
 
 use std::io::{self, Write};
+use std::process::Command;
 
 /// Displays the command-line interface (CLI) help information for the mutatis application.
 ///
@@ -28,7 +34,6 @@ pub fn cli_versions() {
 	shell_call("solana", "-V");
 	shell_call("anchor", "-V");
 }
-
 
 pub fn cli_init(g: &Globals) {
 	cli_name(&g);
@@ -59,12 +64,16 @@ pub fn cli_init(g: &Globals) {
 		//println!("Le répertoire existe !");
 	} else {
 		shell_call("mkdir", &mutatis_dir);
+
 		let backup_dir: String = format!("{}/.mutatis/backup", g.fwd);
 		shell_call("mkdir", &backup_dir);
+
 		let logs_dir: String = format!("{}/.mutatis/logs", g.fwd);
 		shell_call("mkdir", &logs_dir);
+
 		let tmp_dir: String = format!("{}/.mutatis/tmp", g.fwd);
 		shell_call("mkdir", &tmp_dir);
+
 		let mutations_dir: String = format!("{}/.mutatis/mutations", g.fwd);
 		shell_call("mkdir", &mutations_dir);
 	}
@@ -89,17 +98,20 @@ pub fn cli_init(g: &Globals) {
 
 	let test_cmd = qa(
 		"Anchor test command",
-		"anchor test --skip-local-validator",
+		DEFAULT_TEST_CMD,
+		//"anchor test --skip-local-validator",
 	);
 
 	let validator_node = qa(
 		"Validator node",
-		"solana-test-validator --reset",
+		DEFAULT_VALIDATOR_NODE,
+		//"solana-test-validator --reset",
 	);
 
 	let mutation_level = qa(
 		"Mutation level",
-		"1",
+		&DEFAULT_MUTATION_LEVEL.to_string(),
+		//"1",
 	);
 
 	// 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
@@ -108,10 +120,34 @@ pub fn cli_init(g: &Globals) {
 		1
 	});
 
+
+	toml_generation(&g,
+		&test_cmd,
+		&validator_node,
+		ml
+	);
+
 	// println!("{}", test_cmd);
 	// println!("{}", validator_node);
 	// println!("{}", ml);
 
+}
+
+
+pub fn cli_analyze(g: &Globals) {
+	cli_name(&g);
+	//println!("path : {}", g.fwd);
+	let file: String = format!("{}/.mutatis/{}", g.fwd, "mutatis.toml");
+	check_file_exists(&file, "Doesn't seems to have a `mutatis.toml` file !");
+	// clean mutations !
+	let mutations_dir: String = format!("{}/.mutatis/mutations/", g.fwd);
+	println!("{}", mutations_dir);
+	//shell_call("rm", &mutations_dir);
+
+    match clear_directory(&mutations_dir) {
+        Ok(_) => {},
+        Err(e) => {eprint_exit("Error occured during file erasing !");}
+    }
 }
 
 
