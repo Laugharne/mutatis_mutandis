@@ -1,4 +1,3 @@
-//use std::process;
 use std::path::Path;
 use crate::{
 	utils::*,
@@ -11,7 +10,6 @@ use std::fs::read_to_string;
 use text_colorizer::*;
 
 use std::io::{self, Write};
-use std::process::Command;
 
 /// Displays the command-line interface (CLI) help information for the mutatis application.
 ///
@@ -115,13 +113,14 @@ pub fn cli_init(g: &Globals) {
 	);
 
 	// 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
-    let ml = mutation_level.parse::<u8>().unwrap_or_else(|_err| {
+	let ml = mutation_level.parse::<u8>().unwrap_or_else(|_err| {
 		eprintln!("{}{}", IDENT, "Conversion Error, level set to default !".red());
 		1
 	});
 
 
-	toml_generation(&g,
+	let _ = toml_generation(
+		&g,
 		&test_cmd,
 		&validator_node,
 		ml
@@ -139,15 +138,34 @@ pub fn cli_analyze(g: &Globals) {
 	//println!("path : {}", g.fwd);
 	let file: String = format!("{}/.mutatis/{}", g.fwd, "mutatis.toml");
 	check_file_exists(&file, "Doesn't seems to have a `mutatis.toml` file !");
+
 	// clean mutations !
 	let mutations_dir: String = format!("{}/.mutatis/mutations/", g.fwd);
-	println!("{}", mutations_dir);
-	//shell_call("rm", &mutations_dir);
+	//println!("{}", mutations_dir);
 
-    match clear_directory(&mutations_dir) {
-        Ok(_) => {},
-        Err(e) => {eprint_exit("Error occured during file erasing !");}
-    }
+	match clear_directory(&mutations_dir) {
+		Ok(_) => {},
+		Err(_e) => {eprint_exit("Error occured during file erasing !");}
+	}
+
+	// clean backup !
+	let backup_dir: String = format!("{}/.mutatis/backup/", g.fwd);
+	println!("{}", backup_dir);
+
+	match clear_directory(&backup_dir) {
+		Ok(_) => {},
+		Err(_e) => {eprint_exit("Error occured during file erasing !");}
+	}
+
+	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
+	let src_dir: String        = format!("{}/programs/{}/src", g.fwd, dir_project_name);
+
+	let files: Vec<std::path::PathBuf> = parse_directories(&Path::new(&src_dir)).unwrap();
+
+	for file in files {
+		println!("File : {:?}", file);
+	}
+
 }
 
 

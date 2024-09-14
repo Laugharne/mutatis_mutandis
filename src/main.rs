@@ -105,7 +105,7 @@ fn cli_options(g: &Globals) -> &Globals {
 fn main() {
 	let g: Globals = init_app();
 	//println!("{:?}", g);
-	let g = cli_options( &g);
+	let _g = cli_options( &g);
 
 	process::exit(0);
 }
