@@ -8,6 +8,11 @@ use std::path::{Path, PathBuf};
 
 pub const IDENT: &str = "  ";
 
+use crate::{
+	Globals,
+	analyze::*,
+};
+
 
 
 pub fn shell_call(cmd: &str, args: &str) {
@@ -111,4 +116,9 @@ pub fn copy_dir_all(src: &Path, dst: &Path) -> io::Result<()> {
 		}
 	}
 	Ok(())
+}
+
+
+pub fn build_mutation_index_str(index: IndexMutation) -> String {
+	format!("m{:04}", index)
 }

@@ -8,3 +8,7 @@ edition = "2021"
 serde = { version = "1.0.210", features = ["derive"] }
 text-colorizer = "1"
 toml = "0.8.19"
+syn = "1.0.109"
+quote = "1.0"
+proc-macro2 = "1.0"
+prettyplease = "0.1"

@@ -149,23 +149,28 @@ pub fn cli_analyze(g: &Globals) {
 		Err(_e) => {eprint_exit("Error occured during file erasing !");}
 	}
 
-	// clean backup !
-	let backup_dir: String = format!("{}/.mutatis/backup/", g.fwd);
-	println!("{}", backup_dir);
-
-	match clear_directory(&backup_dir) {
-		Ok(_) => {},
-		Err(_e) => {eprint_exit("Error occured during file erasing !");}
-	}
-
 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
 	let src_dir: String        = format!("{}/programs/{}/src", g.fwd, dir_project_name);
 
-	let files = parse_directories(&Path::new(&src_dir)).unwrap();
+	let files: Vec<SourceCode> = parse_directories(&Path::new(&src_dir)).unwrap();
 
-	for file in files {
-		println!("> {:?}", file.path_src_root);
+	let display = format!("Files to analyze: {:?}", files.len());
+	println!("\n{}{}", IDENT, display.green());
+	for file in &files {
+		println!("{}{}{} {}", IDENT, IDENT, "-".red(), file.path_src_root);
 	}
+
+	let files: Vec<SourceCode> = pass1( &g, &src_dir, files);
+
+	// clean backup !
+	// let backup_dir: String = format!("{}/.mutatis/backup/", g.fwd);
+	// //println!("{}", backup_dir);
+
+	// match clear_directory(&backup_dir) {
+	// 	Ok(_) => {},
+	// 	Err(_e) => {eprint_exit("Error occured during file erasing !");}
+	// }
+
 
 }
 

@@ -7,12 +7,13 @@ use std::env;
 use text_colorizer::*;
 //use std::path::PathBuf;
 
-pub mod cli;
-use cli::*;//{cli_version,cli_versions, cli_help};
+mod cli;
 mod utils;
 mod toml;
 mod default;
 mod analyze;
+
+use cli::*;//{cli_version,cli_versions, cli_help};
 
 #[derive(Debug)]
 #[derive(Clone)]

@@ -2,18 +2,30 @@ use std::path::{Path, PathBuf};
 use std::{fs, process};
 use std::io;
 
+use syn::{parse_file, spanned::Spanned, BinOp, Expr, ExprUnary, File, UnOp};
+use proc_macro2::Span;
+
+use crate::{
+	Globals,
+	utils,
+};
+
+
+pub type IndexMutation = u16;
+
+
 #[derive(Debug)]
 pub struct SourceCode {
 	pub path_full         : PathBuf,
 	pub path_src_root     : String,
 	pub file_name         : String,
 	pub done              : bool,
-	pub index             : u16,
+	pub index             : IndexMutation,
 	pub possible_mutations: u16,
 }
 
 
-pub fn parse_directories_rec(org_dir: &str, dir: &Path, index: u16) -> io::Result<Vec<SourceCode>> {
+pub fn parse_directories_rec(org_dir: &str, dir: &Path, index: IndexMutation) -> io::Result<Vec<SourceCode>> {
 	let mut files: Vec<SourceCode> = Vec::new();
 	let skip               = org_dir.len() + 1;
 
@@ -57,4 +69,16 @@ pub fn parse_directories(dir: &Path) -> io::Result<Vec<SourceCode>> {
 		}
 	}
 }
+
+
+
+pub fn pass1(g: &Globals, src_dir: &str, files: Vec<SourceCode>) -> Vec<SourceCode> {
+
+
+
+
+	files
+}
+
+
 
