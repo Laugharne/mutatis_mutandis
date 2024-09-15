@@ -112,28 +112,3 @@ pub fn copy_dir_all(src: &Path, dst: &Path) -> io::Result<()> {
 	}
 	Ok(())
 }
-
-struct SourceCode {
-	path: PathBuf,
-	done: bool,
-	index: u16,
-}
-
-
-pub fn parse_directories(dir: &Path) -> io::Result<Vec<PathBuf>> {
-	let mut files = Vec::new();
-
-	// Read directory content
-	for entry in fs::read_dir(dir)? {
-		let entry = entry?;
-		let path = entry.path();
-
-		if path.is_dir() {
-			files.extend(parse_directories(&path)?);
-		} else {
-			files.push(path);
-		}
-	}
-
-	Ok(files)
-}

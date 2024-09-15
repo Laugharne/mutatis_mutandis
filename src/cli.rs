@@ -3,6 +3,7 @@ use crate::{
 	utils::*,
 	toml::*,
 	default::*,
+	analyze::*,
 	Globals
 };
 use std::fs::read_to_string;
@@ -160,10 +161,10 @@ pub fn cli_analyze(g: &Globals) {
 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
 	let src_dir: String        = format!("{}/programs/{}/src", g.fwd, dir_project_name);
 
-	let files: Vec<std::path::PathBuf> = parse_directories(&Path::new(&src_dir)).unwrap();
+	let files = parse_directories(&Path::new(&src_dir)).unwrap();
 
 	for file in files {
-		println!("File : {:?}", file);
+		println!("> {:?}", file.path_src_root);
 	}
 
 }

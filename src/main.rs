@@ -12,6 +12,7 @@ use cli::*;//{cli_version,cli_versions, cli_help};
 mod utils;
 mod toml;
 mod default;
+mod analyze;
 
 #[derive(Debug)]
 #[derive(Clone)]
