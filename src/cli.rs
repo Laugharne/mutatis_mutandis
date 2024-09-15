@@ -152,7 +152,7 @@ pub fn cli_analyze(g: &Globals) {
 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
 	let src_dir: String        = format!("{}/programs/{}/src", g.fwd, dir_project_name);
 
-	let files: Vec<SourceCode> = parse_directories(&Path::new(&src_dir)).unwrap();
+	let mut files: Vec<SourceCode> = parse_directories(&Path::new(&src_dir)).unwrap();
 
 	let display = format!("Files to analyze: {:?}", files.len());
 	println!("\n{}{}", IDENT, display.green());
@@ -160,7 +160,7 @@ pub fn cli_analyze(g: &Globals) {
 		println!("{}{}{} {}", IDENT, IDENT, "-".red(), file.path_src_root);
 	}
 
-	let files: Vec<SourceCode> = pass1( &g, &src_dir, files);
+	let mut files: Vec<SourceCode> = pass1( &g, &src_dir, files);
 
 	// clean backup !
 	// let backup_dir: String = format!("{}/.mutatis/backup/", g.fwd);
