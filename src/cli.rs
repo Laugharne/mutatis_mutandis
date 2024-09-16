@@ -168,7 +168,20 @@ pub fn cli_analyze(g: &Globals) {
 		println!("{}{}{} {}", IDENT, IDENT, "-".red(), file.path_src_root);
 	}
 
-	let mut files: Vec<SourceCode> = pass1( &g, &src_dir, files);
+	pass1( &g, &src_dir, &mut files);
+
+	let mut nn_mutation: IndexMutation = 0;
+
+
+	let display: String = format!("Mutation entry point per file:");
+	println!("\n{}{}", IDENT, display.green());
+	for file in &files {
+		println!("{}{}{} (x{})\t{}", IDENT, IDENT, "-".red(), file.entry_point, file.path_src_root);
+		//nn_mutation += file.entry_point;
+	}
+
+	//pass2( &g, &src_dir, &mut files);
+
 
 	// clean backup !
 	// let backup_dir: String = format!("{}/.mutatis/backup/", g.fwd);

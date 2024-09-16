@@ -72,12 +72,11 @@ pub fn parse_directories_rec(org_dir: &str, dir: &Path, index: IndexMutation) ->
 }
 
 
-
-pub fn pass1(g: &Globals, src_dir: &str, files: Vec<SourceCode>) -> Vec<SourceCode> {
+pub fn pass1(g: &Globals, src_dir: &str, files: &mut Vec<SourceCode>) {
 
 	//println!("{}", src_dir);// no '/' at the end
 
-	for file in &files {
+	for file in files.iter_mut() {
 		//println!("{}{}{} {}", IDENT, IDENT, "-".red(), file.path_src_root);
 		let input_path: &Path = file.path_full.as_ref();
 		let code: String = fs::read_to_string(input_path).expect("Unable to read file");
@@ -92,15 +91,10 @@ pub fn pass1(g: &Globals, src_dir: &str, files: Vec<SourceCode>) -> Vec<SourceCo
 		// let output_path: &Path = Path::new("./__modified.rs");
 		// fs::write(output_path, modified_code).expect("Unable to write file");
 
-		//println!("- {}\t{}", file.path_src_root, nn_entry_point);
-		//file.entry_point = nn_entry_point;
+		file.entry_point = nn_entry_point;
 	}
 
-	files
 }
-
-
-// --------
 
 
 fn pass1_parse_ast(mut ast: File, nn_entry_point: &mut IndexEntryPoint) -> File {
@@ -125,15 +119,6 @@ fn pass1_parse_ast(mut ast: File, nn_entry_point: &mut IndexEntryPoint) -> File 
 			}
 			_ => {}
 		}
-		/*
-		if let syn::Item::Fn(func) = item {
-			// Modifier les expressions dans le corps de la fonction
-			for statement in &mut func.block.stmts {
-				pass1_parse_stmt(statement);
-			}
-			pass1_parse_function(func);
-		}
-		*/
 	}
 	ast
 }
@@ -200,8 +185,6 @@ fn pass1_parse_expr(expr: &mut syn::Expr, nn_entry_point: &mut IndexEntryPoint) 
 			}
 		}
 
-		//
-		//
 		_ => {}
 	}
 }
@@ -215,8 +198,8 @@ fn pass1_parse_condition(cond: &mut syn::Expr, nn_entry_point: &mut IndexEntryPo
 			BinOp::Eq(_) => {
 				// Récupère la position (span) de l'opérateur pour
 				// préserver cette information lors de la modification.
-				let span: Span = expr_binary.op.span();
 
+				let span: Span = expr_binary.op.span();
 				expr_binary.op = BinOp::Ne(syn::token::Ne {
 					spans: [span, span],
 				});
@@ -227,8 +210,8 @@ fn pass1_parse_condition(cond: &mut syn::Expr, nn_entry_point: &mut IndexEntryPo
 			BinOp::Gt(_) => {
 				// Récupère la position (span) de l'opérateur pour
 				// préserver cette information lors de la modification.
-				let span: Span = expr_binary.op.span();
 
+				let span: Span = expr_binary.op.span();
 				expr_binary.op = BinOp::Le(syn::token::Le {
 					spans: [span, span],
 				});
@@ -260,137 +243,3 @@ fn pass1_parse_boolean_literal(expr: &mut syn::Expr, nn_entry_point: &mut IndexE
 }
 
 
-
-
-
-// --------
-
-/*
-fn pass1_parse_ast(mut ast: File, nn_entry_point: &mut IndexEntryPoint) -> File {
-	// Parcourir les items de l'AST
-	for item in &mut ast.items {
-		if let syn::Item::Fn(func) = item {
-			// Modifier les expressions dans le corps de la fonction
-			for statement in &mut func.block.stmts {
-				pass1_parse_stmt(statement, nn_entry_point);
-			}
-			pass1_parse_function(func, nn_entry_point);
-		}
-	}
-	ast
-}
-
-
-fn pass1_parse_function(func: &mut syn::ItemFn, nn_entry_point: &mut IndexEntryPoint) {
-	// Vérifie et modifie la dernière expression du bloc (retour implicite)
-	if let Some(last_expr) = func.block.stmts.last_mut() {
-		if let syn::Stmt::Expr(expr) = last_expr {
-			//invert_boolean_literal(expr);
-			*nn_entry_point += 1;
-			println!("last expression bool +1");
-		}
-	}
-}
-
-fn pass1_parse_stmt(statement: &mut syn::Stmt, nn_entry_point: &mut IndexEntryPoint) {
-	if let syn::Stmt::Expr(expr) | syn::Stmt::Semi(expr, _) = statement {
-		pass1_parse_expr(expr, nn_entry_point);
-	}
-}
-
-fn pass1_parse_expr(expr: &mut syn::Expr, nn_entry_point: &mut IndexEntryPoint) {
-	match expr {
-		// Si l'expression est une condition if, elle est modifiée via `modify_condition()`.
-		syn::Expr::If(expr_if) => {
-			pass1_parse_condition(&mut expr_if.cond, nn_entry_point);
-
-			// Les branches `then` et else `des` instructions `if`
-			// sont également parcourues pour appliquer les modifications.
-			for statement in &mut expr_if.then_branch.stmts {
-				pass1_parse_stmt(statement, nn_entry_point);
-			}
-			if let Some((_, else_branch)) = &mut expr_if.else_branch {
-				pass1_parse_expr(else_branch, nn_entry_point);
-			}
-		}
-		// Recursively modify other expressions
-		syn::Expr::Block(expr_block) => {
-			for statement in &mut expr_block.block.stmts {
-				pass1_parse_stmt(statement, nn_entry_point);
-			}
-		}
-
-		// Si l'expression est un retour booléen, inverser la valeur retournée
-		syn::Expr::Return(ret) => {
-			if let Some(expr) = &mut ret.expr {
-				pass1_parse_boolean_literal(expr, nn_entry_point);
-			}
-		}
-
-		//
-		//
-		_ => {}
-	}
-}
-
-
-fn pass1_parse_condition(cond: &mut syn::Expr, nn_entry_point: &mut IndexEntryPoint) {
-	// Si la condition est une expression binaire (comme `a == b`), elle est modifiée.
-	if let syn::Expr::Binary(expr_binary) = cond {
-		match expr_binary.op {
-
-			// Si l'opérateur est `==`, il est remplacé par `!=` (différent).
-			BinOp::Eq(_) => {
-				*nn_entry_point += 1;
-				println!("== -> != +1");
-					// Récupère la position (span) de l'opérateur pour
-				// préserver cette information lors de la modification.
-				// let span: Span = expr_binary.op.span();
-
-				// expr_binary.op = BinOp::Ne(syn::token::Ne {
-				// 	spans: [span, span],
-				// });
-			}
-
-			// Si l'opérateur est `>`, il est remplacé par `<=` (inférieur ou égal).
-			BinOp::Gt(_) => {
-				*nn_entry_point += 1;
-				println!("> --> <= +1");
-					// Récupère la position (span) de l'opérateur pour
-				// préserver cette information lors de la modification.
-				// let span: Span = expr_binary.op.span();
-
-				// expr_binary.op = BinOp::Le(syn::token::Le {
-				// 	spans: [span, span],
-				// });
-			}
-
-			_ => {}
-		}
-
-		// Récursivement, modifier les sous-expressions gauche et droite si nécessaire
-		pass1_parse_condition(&mut *expr_binary.left, nn_entry_point);
-		pass1_parse_condition(&mut *expr_binary.right, nn_entry_point);
-
-	}
-
-	// Si la condition est une expression unaire (comme `!a`), appliquer la modification récursive.
-	if let syn::Expr::Unary(expr_unary) = cond {
-		pass1_parse_condition(&mut *expr_unary.expr, nn_entry_point);
-	}
-
-}
-
-
-
-fn pass1_parse_boolean_literal(expr: &mut syn::Expr, nn_entry_point: &mut IndexEntryPoint) {
-	if let syn::Expr::Lit(expr_lit) = expr {
-		if let syn::Lit::Bool(ref mut lit_bool) = expr_lit.lit {
-			//lit_bool.value = !lit_bool.value;  // Inverse la valeur booléenne
-			*nn_entry_point += 1;
-			println!("inverse boolean +1");
-
-		}
-	}
-}
-*/

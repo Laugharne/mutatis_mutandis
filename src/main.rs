@@ -8,10 +8,11 @@ use text_colorizer::*;
 //use std::path::PathBuf;
 
 mod cli;
-mod utils;
 mod toml;
+mod utils;
 mod default;
 mod analyze;
+mod mutation;
 
 use cli::*;//{cli_version,cli_versions, cli_help};
 
