@@ -42,12 +42,23 @@ pub fn cli_init(g: &Globals) {
 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
 
 	// check for some important files !
-	let file: String = format!("{}/{}", g.fwd, "Cargo.toml");
-	check_file_exists(&file, "Doesn't seems to be a Rust project !");
-	let file = format!("{}/{}", g.fwd, "Anchor.toml");
-	check_file_exists(&file, "doesn't seems to ban Anchor project !");
-	let file: String = format!("{}/programs/{}/Cargo.toml", g.fwd, dir_project_name);
-	check_file_exists(&file, "Cargo.toml doesn't exists in programs directory !");
+	//-let file: String = format!("{}/{}", g.fwd, "Cargo.toml");
+	check_file_exists(
+		&format!("{}/{}", g.fwd, "Cargo.toml"),
+		"Doesn't seems to be a Rust project !"
+	);
+
+	//-let file: String = format!("{}/{}", g.fwd, "Anchor.toml");
+	check_file_exists(
+		&format!("{}/{}", g.fwd, "Anchor.toml"),
+		"doesn't seems to ban Anchor project !"
+	);
+
+	//-let file: String = format!("{}/programs/{}/Cargo.toml", g.fwd, dir_project_name);
+	check_file_exists(
+		&format!("{}/programs/{}/Cargo.toml", g.fwd, dir_project_name),
+		"Cargo.toml doesn't exists in programs directory !"
+	);
 
 	let git_ignore: &str = ".gitignore";
 	let git_ignore_full_path: String = format!("{}/{}", g.fwd, git_ignore);
@@ -79,7 +90,7 @@ pub fn cli_init(g: &Globals) {
 
 	// `.gitignore`
 	// sanity check, add '\n' if needed
-	let content = read_to_string(&git_ignore_full_path).unwrap();
+	let content: String = read_to_string(&git_ignore_full_path).unwrap();
 	if !content.ends_with('\n') {
 		add_to_txt_file(&git_ignore_full_path, "\n");
 	}
@@ -90,31 +101,28 @@ pub fn cli_init(g: &Globals) {
 	nn += check_and_add_to_txt_file(&git_ignore_full_path, "/test-ledger\n");
 
 	if nn > 0 {
-		println!("\nAdded {} lines to `.gitignore`", nn);
+		println!("\nAdded {} new lines to `.gitignore`", nn);
 	}
 
 	println!("");
 
-	let test_cmd = qa(
+	let test_cmd: String = qa(
 		"Anchor test command",
 		DEFAULT_TEST_CMD,
-		//"anchor test --skip-local-validator",
 	);
 
-	let validator_node = qa(
+	let validator_node: String = qa(
 		"Validator node",
 		DEFAULT_VALIDATOR_NODE,
-		//"solana-test-validator --reset",
 	);
 
-	let mutation_level = qa(
+	let mutation_level: String = qa(
 		"Mutation level",
 		&DEFAULT_MUTATION_LEVEL.to_string(),
-		//"1",
 	);
 
 	// 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
-	let ml = mutation_level.parse::<u8>().unwrap_or_else(|_err| {
+	let ml: MutationLevel = mutation_level.parse::<u8>().unwrap_or_else(|_err| {
 		eprintln!("{}{}", IDENT, "Conversion Error, level set to default !".red());
 		1
 	});
@@ -154,7 +162,7 @@ pub fn cli_analyze(g: &Globals) {
 
 	let mut files: Vec<SourceCode> = parse_directories(&Path::new(&src_dir)).unwrap();
 
-	let display = format!("Files to analyze: {:?}", files.len());
+	let display: String = format!("Files to analyze: {:?}", files.len());
 	println!("\n{}{}", IDENT, display.green());
 	for file in &files {
 		println!("{}{}{} {}", IDENT, IDENT, "-".red(), file.path_src_root);
@@ -190,7 +198,7 @@ fn qa(question: &str, default: &str) -> String {
 		.expect("Error reading user input.");
 	println!("");
 
-	let user_intput = user_intput.trim().to_string();
+	let user_intput: String = user_intput.trim().to_string();
 	if user_intput.is_empty() {
 		return default.to_owned();
 	}

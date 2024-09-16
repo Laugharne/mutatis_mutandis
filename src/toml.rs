@@ -3,7 +3,8 @@ use std::fs::File;
 use std::io::Write;
 
 use crate::{
-	default::*, utils::IDENT, Globals
+	default::*, utils::IDENT, Globals,
+	analyze::MutationLevel,
 };
 
 #[derive(Serialize)]
@@ -25,7 +26,7 @@ struct MutationConfig {
 	test_cmd        : String,
 	validator_node  : String,
 	test_ledger_path: String,
-	mutation_level  : u8,
+	mutation_level  : MutationLevel,
 }
 
 
@@ -33,7 +34,7 @@ pub fn toml_generation(
 	g             : &Globals,
 	test_cmd      : &str,
 	validator_node: &str,
-	mutation_level: u8
+	mutation_level: MutationLevel
 ) -> std::io::Result<()> {
 	let version = env!("CARGO_PKG_VERSION");
 	let config = Config {
@@ -61,4 +62,5 @@ pub fn toml_generation(
 
 	println!("{}TOML file generated", IDENT);
 	Ok(())
+
 }
