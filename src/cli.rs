@@ -174,12 +174,11 @@ pub fn cli_analyze(g: &Globals) {
 
 	let mut nn_mutation: IndexMutation = 0;
 
-
 	let display: String = format!("Mutation entry point per file:");
 	println!("\n{}{}", IDENT, display.green());
 	for file in &files {
 		println!("{}{}{} (x{})\t{}", IDENT, IDENT, "-".red(), file.entry_point, file.path_src_root);
-		//nn_mutation += file.entry_point;
+		nn_mutation += file.entry_point;
 	}
 
 	pass2( &g, &src_dir, &mut files);

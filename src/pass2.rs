@@ -74,8 +74,7 @@ pub fn pass2(
 
 			let modified_code: String = prettyplease::unparse(&ast_output);
 			fs::write(output_path, modified_code).expect("Unable to write file");
-	});
-
+		});
 
 	}
 
