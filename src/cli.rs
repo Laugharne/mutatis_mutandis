@@ -4,6 +4,8 @@ use crate::{
 	toml::*,
 	default::*,
 	analyze::*,
+	pass1::*,
+	pass2::*,
 	Globals
 };
 use std::fs::read_to_string;
@@ -128,7 +130,7 @@ pub fn cli_init(g: &Globals) {
 	});
 
 
-	let _ = toml_generation(
+	let _ = main_toml_generation(
 		&g,
 		&test_cmd,
 		&validator_node,
@@ -180,7 +182,7 @@ pub fn cli_analyze(g: &Globals) {
 		//nn_mutation += file.entry_point;
 	}
 
-	//pass2( &g, &src_dir, &mut files);
+	pass2( &g, &src_dir, &mut files);
 
 
 	// clean backup !

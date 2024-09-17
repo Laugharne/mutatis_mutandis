@@ -12,7 +12,10 @@ mod toml;
 mod utils;
 mod default;
 mod analyze;
-mod mutation;
+//-mod mutation;
+
+mod pass1;
+mod pass2;
 
 use cli::*;//{cli_version,cli_versions, cli_help};
 

@@ -1,4 +1,3 @@
-/*
 use std::path::{Path, PathBuf};
 use std::{fs, process};
 use std::io;
@@ -15,9 +14,13 @@ use syn::{
 };
 use proc_macro2::Span;
 
+use crate::toml::mutation_toml_generation;
 use crate::{
 	Globals,
-	utils,
+	utils::{
+		build_mutation_index_str,
+		shell_call
+	},
 	analyze::{
 		IndexEntryPoint,
 		IndexMutation,
@@ -39,18 +42,40 @@ pub fn pass2(
 	for file in files.iter_mut() {
 		//println!("{}{}{} {}", IDENT, IDENT, "-".red(), file.path_src_root);
 		let input_path: &Path = file.path_full.as_ref();
-		let code: String = fs::read_to_string(input_path).expect("Unable to read file");
+		let code: String      = fs::read_to_string(input_path).expect("Unable to read file");
 
 		// Parse code into AST
 		let ast: File                              = syn::parse_file(&code).expect("Unable to parse file");
 		let mut entry_point_index: IndexEntryPoint = 0;
 		let entry_point_mutation: IndexEntryPoint  = file.entry_point;
 
-		let ast_output: File = pass2_parse_ast(ast, entry_point_mutation, &mut entry_point_index);
+		(0..entry_point_mutation).for_each( |entry| {
+			let dir_mutation: String          = build_mutation_index_str(entry);
+			let full_mutation_sub_dir: String = format!("{}/.mutatis/mutations/{}", g.fwd, dir_mutation);
+			//println!("{}",  full_mutation_sub_dir);
+			shell_call("mkdir", &full_mutation_sub_dir);
+			let full_mutation_toml_file: String = format!(
+				"{}/.mutatis/mutations/{}/{}_{}.toml",
+				g.fwd,
+				dir_mutation,
+				dir_mutation,
+				file.file_name
+			);
+			//println!("{}",  full_mutation_toml_file);
+			let _ = mutation_toml_generation(
+				&g,
+				&full_mutation_toml_file,
+				input_path.to_str().unwrap()
+			);
 
-		// let modified_code: String = prettyplease::unparse(&ast_output);
-		// let output_path: &Path = Path::new("./__modified.rs");
-		// fs::write(output_path, modified_code).expect("Unable to write file");
+			let ouput_path: String = format!("{}/{}", full_mutation_sub_dir, file.file_name);
+			let output_path: &Path = Path::new(&ouput_path);
+			let ast_output: File   = pass2_parse_ast(ast.clone(), entry_point_mutation, &mut entry_point_index);
+
+			let modified_code: String = prettyplease::unparse(&ast_output);
+			fs::write(output_path, modified_code).expect("Unable to write file");
+	});
+
 
 	}
 
@@ -188,10 +213,10 @@ fn pass2_parse_condition(
 				// Récupère la position (span) de l'opérateur pour
 				// préserver cette information lors de la modification.
 
-				// let span: Span = expr_binary.op.span();
-				// expr_binary.op = BinOp::Ne(syn::token::Ne {
-				// 	spans: [span, span],
-				// });
+				let span: Span = expr_binary.op.span();
+				expr_binary.op = BinOp::Ne(syn::token::Ne {
+					spans: [span, span],
+				});
 				*entry_point_index += 1;
 			}
 
@@ -200,17 +225,17 @@ fn pass2_parse_condition(
 				// Récupère la position (span) de l'opérateur pour
 				// préserver cette information lors de la modification.
 
-				// let span: Span = expr_binary.op.span();
-				// expr_binary.op = BinOp::Le(syn::token::Le {
-				// 	spans: [span, span],
-				// });
+				let span: Span = expr_binary.op.span();
+				expr_binary.op = BinOp::Le(syn::token::Le {
+					spans: [span, span],
+				});
 				*entry_point_index += 1;
 			}
 
 			_ => {}
 		}
 		// Récursivement, modifier les sous-expressions gauche et droite si nécessaire
-		pass2_parse_condition(&mut *expr_binary.left, entry_point_mutation, entry_point_index);
+		pass2_parse_condition(&mut *expr_binary.left,  entry_point_mutation, entry_point_index);
 		pass2_parse_condition(&mut *expr_binary.right, entry_point_mutation, entry_point_index);
 
 	}
@@ -229,10 +254,9 @@ fn pass2_parse_boolean_literal(
 ) {
 	if let syn::Expr::Lit(expr_lit) = expr {
 		if let syn::Lit::Bool(ref mut lit_bool) = expr_lit.lit {
-			//lit_bool.value = !lit_bool.value;  // Inverse la valeur booléenne
+			lit_bool.value = !lit_bool.value;  // Inverse la valeur booléenne
 			*entry_point_index += 1;
 		}
 	}
 }
 
-*/
