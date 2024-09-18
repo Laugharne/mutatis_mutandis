@@ -76,23 +76,21 @@ pub fn main_toml_generation(
 
 pub fn main_toml_read(
 	g: &Globals,
-
 ) -> std::io::Result<(MainConfig)> {
-	let toml_file: String = format!("{}/.mutatis/{}", g.fwd, "mutatis.toml");
-	let config_content = fs::read_to_string(toml_file)?;
-	// Parsing du fichier TOML
-    let config: MainConfig = toml::from_str(&config_content).unwrap();
-	println!("{:#?}", config);
+	let toml_file: String  = format!("{}/.mutatis/{}", g.fwd, "mutatis.toml");
+	let content: String    = fs::read_to_string(toml_file)?;
+	let config: MainConfig = toml::from_str(&content).unwrap();
+	//println!("{:#?}", config);
 	Ok(config)
 }
 
-#[derive(Serialize)]
-struct MutationConfig {
+#[derive(Serialize, Debug, Deserialize)]
+pub struct MutationConfig {
 	general : MutationGeneralConfig,
 }
 
-#[derive(Serialize)]
-struct MutationGeneralConfig {
+#[derive(Serialize, Debug, Deserialize)]
+pub struct MutationGeneralConfig {
 	full_file_path: String,
 }
 
@@ -120,3 +118,12 @@ pub fn mutation_toml_generation(
 	Ok(())
 }
 
+pub fn mutation_toml_read(
+	g           : &Globals,
+	mutation_toml: &str
+) -> std::io::Result<(MutationConfig)> {
+	let content: String        = fs::read_to_string(mutation_toml)?;
+	let config: MutationConfig = toml::from_str(&content).unwrap();
+	println!("{:#?}", config);
+	Ok(config)
+}

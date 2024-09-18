@@ -64,11 +64,10 @@ pub fn pass2(
 
 
 			let full_mutation_toml_file: String = format!(
-				"{}/.mutatis/mutations/{}/{}_{}.toml",
+				"{}/.mutatis/mutations/{}/{}.toml",
 				g.fwd,
 				dir_mutation,
 				dir_mutation,
-				file.file_name
 			);
 			//println!("{}",  full_mutation_toml_file);
 			let _ = mutation_toml_generation(

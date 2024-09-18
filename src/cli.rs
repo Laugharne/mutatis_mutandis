@@ -227,7 +227,7 @@ pub fn cli_run(g: &Globals) {
 		Err(_e) => {eprint_exit("Error occured during file erasing !");}
 	}
 
-	// produce a copy of source files to `.mutatis/backup` directory !
+	let _ = main_toml_read(&g);
 
 	// get <project_name> from path (?!)
 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
@@ -241,18 +241,21 @@ pub fn cli_run(g: &Globals) {
 		Path::new(&backup_dir)
 	);
 
-	let mutations_dir: String = format!("{}/.mutatis/mutations/", g.fwd);
-	let mutations = mutations_read_dir(&mutations_dir).unwrap();
-	let _ = main_toml_read(&g);
+	let mutations_dir: String  = format!("{}/.mutatis/mutations/", g.fwd);
+	let mutations: Vec<String> = mutations_read_dir(&mutations_dir).unwrap();
+
 	//println!("- {}", mutations_path.display());
 	//println!(":: {:?}", m);
 	for mutation in mutations {
-		//println!("- {}", mutations_path.display());
+		//println!("> {}", mutation);
+		let mutation_dir_name: &str = mutation.split('/').last().unwrap_or("");
+		let mutation_toml: String   = format!("{}/{}.toml", mutation, mutation_dir_name);
+		//println!("> {}", mutation_toml);
+		let _ = mutation_toml_read( &g, &mutation_toml);
+
 	}
 
 }
-
-// 	files  : &mut Vec<SourceCode>
 
 
 fn qa(question: &str, default: &str) -> String {
