@@ -12,7 +12,7 @@ mod toml;
 mod utils;
 mod default;
 mod analyze;
-//-mod mutation;
+mod mutation;
 
 mod pass1;
 mod pass2;
@@ -23,7 +23,7 @@ use cli::*;//{cli_version,cli_versions, cli_help};
 #[derive(Clone)]
 #[allow(dead_code)]
 struct Globals {
-	fwd : String,        // Full Workinbg Directory
+	fwd : String,        // Full Working Directory
 	args: Vec<String>,   // cli arguments
 }
 
@@ -82,7 +82,7 @@ fn cli_options(g: &Globals) -> &Globals {
 			match option {
 				"init"     => { cli_init(&g)},
 				"analyze"  => { cli_analyze(&g)},
-				"run"      => {},
+				"run"      => { cli_run(&g)},
 				"reset"    => {},
 				"clear"    => {},
 				"remove"   => {},

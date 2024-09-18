@@ -1,9 +1,10 @@
-use std::path::Path;
+use std::{fs, path::{Path, PathBuf}};
 use crate::{
 	utils::*,
 	toml::*,
 	default::*,
 	analyze::*,
+	mutation::*,
 	pass1::*,
 	pass2::*,
 	Globals
@@ -145,7 +146,7 @@ pub fn cli_init(g: &Globals) {
 
 
 pub fn cli_analyze(g: &Globals) {
-	cli_name(&g);
+	//cli_name(&g);
 	//println!("path : {}", g.fwd);
 	let file: String = format!("{}/.mutatis/{}", g.fwd, "mutatis.toml");
 	check_file_exists(&file, "Doesn't seems to have a `mutatis.toml` file !");
@@ -183,19 +184,75 @@ pub fn cli_analyze(g: &Globals) {
 
 	pass2( &g, &src_dir, &mut files);
 
-
-	// clean backup !
-	// let backup_dir: String = format!("{}/.mutatis/backup/", g.fwd);
-	// //println!("{}", backup_dir);
-
-	// match clear_directory(&backup_dir) {
-	// 	Ok(_) => {},
-	// 	Err(_e) => {eprint_exit("Error occured during file erasing !");}
-	// }
-
+	let display: String = format!("Mutation generated: {}", nn_mutation);
+	println!("\n{}{}", IDENT, display.green());
+	let mut idx: IndexMutation = 0;
+	for file in &files {
+		println!("{}{}{} {}", IDENT, IDENT, "-".red(), file.path_src_root);
+		(0..file.entry_point).for_each(|entry| {
+			println!(
+				"{}{}{}{} {}",
+				IDENT, IDENT, IDENT,
+				"-".red(),
+				build_mutation_index_str(idx)
+			);
+			idx += 1;
+		});
+	}
 
 }
 
+
+
+pub fn cli_run(g: &Globals) {
+
+	println!("");
+
+	let commit: String = qa(
+		"Have you proceed to a commit before ? (y/n)",
+		DEFAULT_COMMIT_QUESTION,
+	);
+
+	if !commit.eq_ignore_ascii_case(DEFAULT_COMMIT_QUESTION) {
+		println!("{}{}", IDENT, "Processus cancelled.".red());
+		return;
+	}
+
+	//clean backup !
+	let backup_dir: String = format!("{}/.mutatis/backup/", g.fwd);
+	//println!("- {}", backup_dir);
+
+	match clear_directory(&backup_dir) {
+		Ok(_) => {},
+		Err(_e) => {eprint_exit("Error occured during file erasing !");}
+	}
+
+	// produce a copy of source files to `.mutatis/backup` directory !
+
+	// get <project_name> from path (?!)
+	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
+
+	// programs/<project_name>/src/
+	let src_dir: String = format!("{}/programs/{}/src", g.fwd, dir_project_name);
+	//println!("- {}", src_dir);
+
+	let _ = copy_dir_all(
+		Path::new(&src_dir),
+		Path::new(&backup_dir)
+	);
+
+	let mutations_dir: String = format!("{}/.mutatis/mutations/", g.fwd);
+	let mutations = mutations_read_dir(&mutations_dir).unwrap();
+	let _ = main_toml_read(&g);
+	//println!("- {}", mutations_path.display());
+	//println!(":: {:?}", m);
+	for mutation in mutations {
+		//println!("- {}", mutations_path.display());
+	}
+
+}
+
+// 	files  : &mut Vec<SourceCode>
 
 
 fn qa(question: &str, default: &str) -> String {

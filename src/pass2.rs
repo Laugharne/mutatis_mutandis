@@ -48,9 +48,21 @@ pub fn pass2(
 		(0..current_entry_point).for_each( |entry| {
 			let mut entry_point_index: IndexEntryPoint = 0;
 			let dir_mutation: String          = build_mutation_index_str(entry);
+
 			let full_mutation_sub_dir: String = format!("{}/.mutatis/mutations/{}", g.fwd, dir_mutation);
-			//println!("{}",  full_mutation_sub_dir);
 			shell_call("mkdir", &full_mutation_sub_dir);
+
+			let full_mutation_sub_dir_bak: String = format!("{}/.mutatis/mutations/{}/backup", g.fwd, dir_mutation);
+			shell_call("mkdir", &full_mutation_sub_dir_bak);
+
+			// copy original source file to backup
+			let org = &file.path_full;
+			let bak = format!("{}/{}", full_mutation_sub_dir_bak, file.file_name);
+			// println!("{:?}", org);
+			// println!("{}", bak);
+			let _ = fs::copy(&org, &bak);	// TODO need robustness !!
+
+
 			let full_mutation_toml_file: String = format!(
 				"{}/.mutatis/mutations/{}/{}_{}.toml",
 				g.fwd,
@@ -65,7 +77,7 @@ pub fn pass2(
 				input_path.to_str().unwrap()
 			);
 
-			println!("entry = {} / {}", entry, current_entry_point);
+			//println!("entry = {} / {}", entry, current_entry_point);
 
 			let code: String      = fs::read_to_string(input_path).expect("Unable to read file");
 
@@ -75,7 +87,7 @@ pub fn pass2(
 			let ouput_path: String = format!("{}/{}", full_mutation_sub_dir, file.file_name);
 			let output_path: &Path = Path::new(&ouput_path);
 			let ast_output: File   = pass2_parse_ast(ast, entry, &mut entry_point_index);
-			println!("");
+			//-println!("");
 			let modified_code: String = prettyplease::unparse(&ast_output);
 			fs::write(output_path, modified_code).expect("Unable to write file");
 		});
@@ -214,7 +226,7 @@ fn pass2_parse_condition(
 			// Si l'opérateur est `==`, il est remplacé par `!=` (différent).
 			BinOp::Eq(_) => {
 
-				print!("== -> != ({})", *entry_point_index);
+				//print!("== -> != ({})", *entry_point_index);
 				if *entry_point_index == current_entry_point {
 					// Récupère la position (span) de l'opérateur pour
 					// préserver cette information lors de la modification.
@@ -222,10 +234,10 @@ fn pass2_parse_condition(
 					expr_binary.op = BinOp::Ne(syn::token::Ne {
 						spans: [span, span],
 					});
-					print!(" - MUTATION\n");
-				} else {
+					//print!(" - MUTATION\n");
+				}/* else {
 					println!("");
-				}
+				}*/
 
 				*entry_point_index += 1;
 
@@ -242,7 +254,7 @@ fn pass2_parse_condition(
 			// Si l'opérateur est `>`, il est remplacé par `<=` (inférieur ou égal).
 			BinOp::Gt(_) => {
 
-				print!("> -> <= ({})", *entry_point_index);
+				//print!("> -> <= ({})", *entry_point_index);
 				if *entry_point_index == current_entry_point {
 					// Récupère la position (span) de l'opérateur pour
 					// préserver cette information lors de la modification.
@@ -250,10 +262,10 @@ fn pass2_parse_condition(
 					expr_binary.op = BinOp::Le(syn::token::Le {
 						spans: [span, span],
 					});
-					print!(" - MUTATION\n");
-				} else {
+					//print!(" - MUTATION\n");
+				}/* else {
 					println!("");
-				}
+				}*/
 
 				*entry_point_index += 1;
 

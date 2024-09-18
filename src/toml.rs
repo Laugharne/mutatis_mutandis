@@ -1,4 +1,8 @@
-use serde::Serialize;
+use serde::{
+	Serialize,
+	Deserialize
+};
+use std::fs;
 use std::{fs::File, path::Path};
 use std::io::Write;
 
@@ -7,21 +11,21 @@ use crate::{
 	analyze::MutationLevel,
 };
 
-#[derive(Serialize)]
-struct MainConfig {
+#[derive(Serialize, Debug, Deserialize)]
+pub struct MainConfig {
 	general : MainGeneralConfig,
 	mutation: MainMutationConfig,
 }
 
 // Section générale du fichier TOML
-#[derive(Serialize)]
+#[derive(Serialize, Debug, Deserialize)]
 struct MainGeneralConfig {
 	version    : String,
 	debug_level: u8,
 }
 
 // Section de configuration de la base de données
-#[derive(Serialize)]
+#[derive(Serialize, Debug, Deserialize)]
 struct MainMutationConfig {
 	test_cmd        : String,
 	validator_node  : String,
@@ -43,10 +47,14 @@ pub fn main_toml_generation(
 			debug_level: DEFAULT_DEBUG_LEVEL,
 		},
 		mutation: MainMutationConfig {
-			test_cmd        : String::from(DEFAULT_TEST_CMD),
-			validator_node  : String::from(DEFAULT_VALIDATOR_NODE),
+			test_cmd        : String::from(test_cmd),
+			validator_node  : String::from(validator_node),
 			test_ledger_path: String::from(DEFAULT_TEST_LEDGER_PATH),
-			mutation_level  : DEFAULT_MUTATION_LEVEL,
+			mutation_level  : mutation_level,
+			//test_cmd        : String::from(DEFAULT_TEST_CMD),
+			//validator_node  : String::from(DEFAULT_VALIDATOR_NODE),
+			//test_ledger_path: String::from(DEFAULT_TEST_LEDGER_PATH),
+			//mutation_level  : DEFAULT_MUTATION_LEVEL,
 		},
 	};
 
@@ -66,6 +74,17 @@ pub fn main_toml_generation(
 }
 
 
+pub fn main_toml_read(
+	g: &Globals,
+
+) -> std::io::Result<(MainConfig)> {
+	let toml_file: String = format!("{}/.mutatis/{}", g.fwd, "mutatis.toml");
+	let config_content = fs::read_to_string(toml_file)?;
+	// Parsing du fichier TOML
+    let config: MainConfig = toml::from_str(&config_content).unwrap();
+	println!("{:#?}", config);
+	Ok(config)
+}
 
 #[derive(Serialize)]
 struct MutationConfig {
@@ -100,3 +119,4 @@ pub fn mutation_toml_generation(
 
 	Ok(())
 }
+

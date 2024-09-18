@@ -20,7 +20,7 @@ pub fn pass1(g: &Globals, src_dir: &str, files: &mut Vec<SourceCode>) {
 		let ast: File = syn::parse_file(&code).expect("Unable to parse file");
 		let mut nn_entry_point: IndexEntryPoint = 0;
 
-		let ast_output: File = pass1_parse_ast(ast, &mut nn_entry_point);
+		let _ast_output: File = pass1_parse_ast(ast, &mut nn_entry_point);
 
 		// let modified_code: String = prettyplease::unparse(&ast_output);
 		// let output_path: &Path = Path::new("./__modified.rs");
