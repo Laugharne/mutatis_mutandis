@@ -92,6 +92,7 @@ pub struct MutationConfig {
 #[derive(Serialize, Debug, Deserialize)]
 pub struct MutationGeneralConfig {
 	full_file_path: String,
+	//id: String,	// TODO
 }
 
 pub fn mutation_toml_generation(
