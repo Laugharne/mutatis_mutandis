@@ -1,10 +1,13 @@
-use std::process::Command;
+use std::process::{Child, Command, Stdio};
 use std::{fs, process};
 use std::fs::{OpenOptions, read_to_string};
 use std::io::Write;
 use text_colorizer::*;
 use std::io;
 use std::path::{Path, PathBuf};
+
+use std::thread::sleep;
+use std::time::Duration;
 
 pub const IDENT: &str = "  ";
 
@@ -30,13 +33,13 @@ pub fn shell_call(cmd: &str, args: &str) {
 }
 
 
-pub fn check_file_exists(file: &str, message: &str) {
+pub fn check_file_exists(g: &Globals	, file: &str, message: &str) {
 	if Path::new(file).exists() { return;}
 	eprint_exit(message);
 }
 
 
-pub fn dir_exists(dir: &str, message: &str) {
+pub fn dir_exists(g: &Globals, dir: &str, message: &str) {
 	if Path::new(dir).is_dir() { return;}
 	eprint_exit(message);
 }
@@ -52,7 +55,7 @@ pub fn add_to_txt_file(file: &str, text: &str) {
 	let _ = file.write_all(text_to_append.as_bytes());
 }
 
-pub fn check_and_add_to_txt_file(file: &str, text: &str) -> u8 {
+pub fn check_and_add_to_txt_file(g: &Globals, file: &str, text: &str) -> u8 {
 	let mut content = read_to_string(&file).unwrap();
 	if ! content.contains(text) {
 		let path = Path::new(file);
@@ -121,4 +124,42 @@ pub fn copy_dir_all(src: &Path, dst: &Path) -> io::Result<()> {
 
 pub fn build_mutation_index_str(index: IndexMutation) -> String {
 	format!("m{:04}", index)
+}
+
+
+
+pub fn validator_lanch(
+	//g                : &mut Globals,
+	path_to_validator: &str,
+	path_of_execution: &str,
+	pause            : u8,
+) -> io::Result<Child> {
+
+	let prog: &str = path_to_validator.split(' ')
+		.next()
+		.unwrap_or("");
+
+	let arg: &str = path_to_validator.split(' ')
+		.last()
+		.unwrap_or("");
+
+	let cmd: Child = Command::new(prog)
+		.arg(arg)
+		.current_dir(path_of_execution)
+		//.output()
+		.stdout(Stdio::piped())
+		.spawn()?;
+
+	//g.validator_flag = true;
+	println!("{}{}1. Validator ignition...", IDENT, IDENT);
+	sleep(Duration::from_secs(pause.into()));
+	println!("{}{}2. Validator ready !", IDENT, IDENT);
+	Ok(cmd)
+
+}
+
+pub fn validator_stop(mut processus: Child) -> io::Result<()> {
+    processus.kill()?;
+	println!("{}{}X. Validator stopped !", IDENT, IDENT);
+    Ok(())
 }

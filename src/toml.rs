@@ -13,24 +13,25 @@ use crate::{
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct MainConfig {
-	general : MainGeneralConfig,
-	mutation: MainMutationConfig,
+	pub general : MainGeneralConfig,
+	pub mutation: MainMutationConfig,
 }
 
 // Section générale du fichier TOML
 #[derive(Serialize, Debug, Deserialize)]
-struct MainGeneralConfig {
-	version    : String,
-	debug_level: u8,
+pub struct MainGeneralConfig {
+	pub version    : String,
+	pub debug_level: u8,
 }
 
 // Section de configuration de la base de données
 #[derive(Serialize, Debug, Deserialize)]
-struct MainMutationConfig {
-	test_cmd        : String,
-	validator_node  : String,
-	test_ledger_path: String,
-	mutation_level  : MutationLevel,
+pub struct MainMutationConfig {
+	pub test_cmd        : String,
+	pub validator_node  : String,
+	pub test_ledger_path: String,
+	pub mutation_level  : MutationLevel,
+	pub validator_pause : u8,
 }
 
 
@@ -49,6 +50,7 @@ pub fn main_toml_generation(
 		mutation: MainMutationConfig {
 			test_cmd        : String::from(test_cmd),
 			validator_node  : String::from(validator_node),
+			validator_pause : DEFAULT_VALIDATOR_PAUSE,
 			test_ledger_path: String::from(DEFAULT_TEST_LEDGER_PATH),
 			mutation_level  : mutation_level,
 			//test_cmd        : String::from(DEFAULT_TEST_CMD),
@@ -125,6 +127,6 @@ pub fn mutation_toml_read(
 ) -> std::io::Result<(MutationConfig)> {
 	let content: String        = fs::read_to_string(mutation_toml)?;
 	let config: MutationConfig = toml::from_str(&content).unwrap();
-	println!("{:#?}", config);
+	//println!("{:#?}", config);
 	Ok(config)
 }

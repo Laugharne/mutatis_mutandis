@@ -47,29 +47,32 @@ pub fn cli_init(g: &Globals) {
 	// check for some important files !
 	//-let file: String = format!("{}/{}", g.fwd, "Cargo.toml");
 	check_file_exists(
+		&g,
 		&format!("{}/{}", g.fwd, "Cargo.toml"),
 		"Doesn't seems to be a Rust project !"
 	);
 
 	//-let file: String = format!("{}/{}", g.fwd, "Anchor.toml");
 	check_file_exists(
+		&g,
 		&format!("{}/{}", g.fwd, "Anchor.toml"),
 		"doesn't seems to ban Anchor project !"
 	);
 
 	//-let file: String = format!("{}/programs/{}/Cargo.toml", g.fwd, dir_project_name);
 	check_file_exists(
+		&g,
 		&format!("{}/programs/{}/Cargo.toml", g.fwd, dir_project_name),
 		"Cargo.toml doesn't exists in programs directory !"
 	);
 
 	let git_ignore: &str = ".gitignore";
 	let git_ignore_full_path: String = format!("{}/{}", g.fwd, git_ignore);
-	check_file_exists(&git_ignore_full_path, "No `.gitignore` !?");
+	check_file_exists(&g, &git_ignore_full_path, "No `.gitignore` !?");
 
 	// programs/<project_name>/src/
 	let src_dir: String = format!("{}/programs/{}/src", g.fwd, dir_project_name);
-	dir_exists(&src_dir, "source directory 'src' doesn't exists !");
+	dir_exists(&g, &src_dir, "source directory 'src' doesn't exists !");
 
 	// check .mutatis/
 	let mutatis_dir: String = format!("{}/.mutatis", g.fwd);
@@ -100,8 +103,8 @@ pub fn cli_init(g: &Globals) {
 
 	// add content in `.gitignore`
 	let mut nn: u8 = 0;
-	nn += check_and_add_to_txt_file(&git_ignore_full_path, "/.mutatis\n");
-	nn += check_and_add_to_txt_file(&git_ignore_full_path, "/test-ledger\n");
+	nn += check_and_add_to_txt_file(&g, &git_ignore_full_path, "/.mutatis\n");
+	nn += check_and_add_to_txt_file(&g, &git_ignore_full_path, "/test-ledger\n");
 
 	if nn > 0 {
 		println!("\nAdded {} new lines to `.gitignore`", nn);
@@ -149,7 +152,7 @@ pub fn cli_analyze(g: &Globals) {
 	//cli_name(&g);
 	//println!("path : {}", g.fwd);
 	let file: String = format!("{}/.mutatis/{}", g.fwd, "mutatis.toml");
-	check_file_exists(&file, "Doesn't seems to have a `mutatis.toml` file !");
+	check_file_exists(&g, &file, "Doesn't seems to have a `mutatis.toml` file !");
 
 	// clean mutations !
 	let mutations_dir: String = format!("{}/.mutatis/mutations/", g.fwd);
@@ -189,7 +192,7 @@ pub fn cli_analyze(g: &Globals) {
 	let mut idx: IndexMutation = 0;
 	for file in &files {
 		println!("{}{}{} {}", IDENT, IDENT, "-".red(), file.path_src_root);
-		(0..file.entry_point).for_each(|entry| {
+		(0..file.entry_point).for_each(|_entry| {
 			println!(
 				"{}{}{}{} {}",
 				IDENT, IDENT, IDENT,
@@ -204,7 +207,7 @@ pub fn cli_analyze(g: &Globals) {
 
 
 
-pub fn cli_run(g: &Globals) {
+pub fn cli_run(mut g: &Globals) {
 
 	println!("");
 
@@ -227,8 +230,14 @@ pub fn cli_run(g: &Globals) {
 		Err(_e) => {eprint_exit("Error occured during file erasing !");}
 	}
 
-	let _ = main_toml_read(&g);
+	let main_toml = main_toml_read(&g).unwrap();
 
+	let path_to_validator: String = main_toml.mutation.validator_node;
+	let path_of_execution: String = main_toml.mutation.test_ledger_path;
+	let validator_pause: u8       = main_toml.mutation.validator_pause;
+	// println!("{:?}", path_to_validator);
+	// println!("{:?}", path_of_execution);
+	// println!("{:?}", validator_pause);
 	// get <project_name> from path (?!)
 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
 
@@ -249,11 +258,28 @@ pub fn cli_run(g: &Globals) {
 	for mutation in mutations {
 		//println!("> {}", mutation);
 		let mutation_dir_name: &str = mutation.split('/').last().unwrap_or("");
+		println!("{}{} {}", IDENT, "-".red(), mutation_dir_name.green());
 		let mutation_toml: String   = format!("{}/{}.toml", mutation, mutation_dir_name);
 		//println!("> {}", mutation_toml);
 		let _ = mutation_toml_read( &g, &mutation_toml);
 
+		let mut processus = validator_lanch(
+			&path_to_validator,
+			&path_of_execution,
+			validator_pause,
+		).unwrap();
+
+		// TODO
+		// copy mutated file
+		// tests --> log
+		// restore original file
+		validator_stop(processus);
+		println!("");
+
 	}
+
+
+
 
 }
 

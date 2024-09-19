@@ -4,6 +4,7 @@
 use std::process;
 
 use std::env;
+use std::process::Child;
 use text_colorizer::*;
 //use std::path::PathBuf;
 
@@ -23,8 +24,10 @@ use cli::*;//{cli_version,cli_versions, cli_help};
 #[derive(Clone)]
 #[allow(dead_code)]
 struct Globals {
-	fwd : String,        // Full Working Directory
-	args: Vec<String>,   // cli arguments
+	fwd           : String,        // Full Working Directory
+	args          : Vec<String>,   // cli arguments
+	//validator_flag: bool,          // Validator node launched (yes if true)
+	//validator_child: Child,
 }
 
 
@@ -62,8 +65,9 @@ fn init_app() -> Globals {
 	//-println!("{:?}", args);
 
 	Globals {
-		fwd : fwd,
-		args: args,
+		fwd      : fwd,
+		args     : args,
+		//validator_flag: false,
 	}
 
 }
