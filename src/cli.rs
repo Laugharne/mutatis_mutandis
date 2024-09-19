@@ -234,9 +234,11 @@ pub fn cli_run(mut g: &Globals) {
 
 	let path_to_validator: String = main_toml.mutation.validator_node;
 	let path_of_execution: String = main_toml.mutation.test_ledger_path;
+	let test_cmd: String          = main_toml.mutation.test_cmd;
 	let validator_pause: u8       = main_toml.mutation.validator_pause;
 	// println!("{:?}", path_to_validator);
 	// println!("{:?}", path_of_execution);
+	// println!("{:?}", test_cmd);
 	// println!("{:?}", validator_pause);
 	// get <project_name> from path (?!)
 	let dir_project_name: &str = g.fwd.split('/').last().unwrap_or("");
@@ -272,10 +274,12 @@ pub fn cli_run(mut g: &Globals) {
 		let src_file: String          = mutation_current.general.full_file_path;
 		let mutated_file_name: &str   = src_file.split('/').last().unwrap_or("");
 		let mutated_full_path: String = format!("{}{}/{}", mutations_dir, mutation_dir_name, mutated_file_name);
+		let log_full_path: String     = format!("{}{}/log.txt", mutations_dir, mutation_dir_name);
 		let backup_full_path: String  = format!("{}{}/backup/{}", mutations_dir, mutation_dir_name, mutated_file_name);
-		println!("> {}\n", src_file);
-		println!("> {}\n", mutated_full_path);
-		println!("> {}\n", backup_full_path);
+		// println!("> {}\n", src_file);
+		// println!("> {}\n", mutated_full_path);
+		// println!("> {}\n", backup_full_path);
+		// println!("> {}\n", log_full_path);
 
 		// copy mutated file --> src
 		let _ = fs::copy(
@@ -283,7 +287,13 @@ pub fn cli_run(mut g: &Globals) {
 			Path::new(&src_file)
 		);
 
+		// println!("Appuyez sur Entrée ...");
+		// let _ = io::stdout().flush(); // Assurez-vous que le message est affiché avant d'attendre
+		// let mut buffer = String::new();
+		// io::stdin().read_line(&mut buffer);
+
 		// tests --> log
+		anchor_tests(&g, &test_cmd, &log_full_path);
 
 		// restore original file --> src
 		let _ = fs::copy(

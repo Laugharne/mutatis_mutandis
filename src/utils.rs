@@ -159,7 +159,28 @@ pub fn validator_lanch(
 }
 
 pub fn validator_stop(mut processus: Child) -> io::Result<()> {
-    processus.kill()?;
-	println!("{}{}X. Validator stopped !", IDENT, IDENT);
-    Ok(())
+	processus.kill()?;
+	println!("{}{}4. Validator stopped !", IDENT, IDENT);
+	Ok(())
+}
+
+pub fn anchor_tests(g: &Globals, test_cmd: &str, log_full_path: &str) {
+	println!("{}{}3. Proceed to Anchor test", IDENT, IDENT);
+
+	let parts: Vec<&str> = test_cmd.split_whitespace().collect();
+	let (prog1, prog2, arg) = (parts[0], parts[1], parts[2]);
+	// println!("* {}", prog1);
+	// println!("* {}", prog2);
+	// println!("* {}", arg);
+
+	let output: process::Output = Command::new(prog1)
+		.arg(prog2)
+		.arg(arg)
+		.current_dir(&g.fwd)
+		.output()
+		.expect("Error during command execution");
+
+	let txt_output = String::from_utf8_lossy(&output.stdout);
+	let _ = fs::write(log_full_path, txt_output.to_string());
+
 }
