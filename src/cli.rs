@@ -258,10 +258,10 @@ pub fn cli_run(mut g: &Globals) {
 	for mutation in mutations {
 		//println!("> {}", mutation);
 		let mutation_dir_name: &str = mutation.split('/').last().unwrap_or("");
-		println!("{}{} {}", IDENT, "-".red(), mutation_dir_name.green());
+		println!("{}{} {}", IDENT, "-".red(), mutation_dir_name);
 		let mutation_toml: String   = format!("{}/{}.toml", mutation, mutation_dir_name);
 		//println!("> {}", mutation_toml);
-		let _ = mutation_toml_read( &g, &mutation_toml);
+		let mutation_current = mutation_toml_read( &g, &mutation_toml).unwrap();
 
 		let mut processus = validator_lanch(
 			&path_to_validator,
@@ -269,11 +269,29 @@ pub fn cli_run(mut g: &Globals) {
 			validator_pause,
 		).unwrap();
 
-		// TODO
-		// copy mutated file
+		let src_file: String          = mutation_current.general.full_file_path;
+		let mutated_file_name: &str   = src_file.split('/').last().unwrap_or("");
+		let mutated_full_path: String = format!("{}{}/{}", mutations_dir, mutation_dir_name, mutated_file_name);
+		let backup_full_path: String  = format!("{}{}/backup/{}", mutations_dir, mutation_dir_name, mutated_file_name);
+		println!("> {}\n", src_file);
+		println!("> {}\n", mutated_full_path);
+		println!("> {}\n", backup_full_path);
+
+		// copy mutated file --> src
+		let _ = fs::copy(
+			Path::new(&mutated_full_path),
+			Path::new(&src_file)
+		);
+
 		// tests --> log
-		// restore original file
-		validator_stop(processus);
+
+		// restore original file --> src
+		let _ = fs::copy(
+			Path::new(&backup_full_path),
+			Path::new(&src_file)
+		);
+
+		let _ = validator_stop(processus);
 		println!("");
 
 	}

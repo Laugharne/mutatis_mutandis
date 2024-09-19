@@ -86,15 +86,18 @@ pub fn main_toml_read(
 	Ok(config)
 }
 
+
+
+
 #[derive(Serialize, Debug, Deserialize)]
 pub struct MutationConfig {
-	general : MutationGeneralConfig,
+	pub general : MutationGeneralConfig,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct MutationGeneralConfig {
-	full_file_path: String,
-	//id: String,	// TODO
+	pub full_file_path: String,
+	//pub id: String,	// TODO
 }
 
 pub fn mutation_toml_generation(
