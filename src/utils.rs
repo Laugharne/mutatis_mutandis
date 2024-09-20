@@ -164,8 +164,8 @@ pub fn validator_stop(mut processus: Child) -> io::Result<()> {
 	Ok(())
 }
 
-pub fn anchor_tests(g: &Globals, test_cmd: &str, log_full_path: &str) {
-	println!("{}{}3. Proceed to Anchor test", IDENT, IDENT);
+pub fn anchor_tests(g: &Globals, test_cmd: &str, log_full_path: &str) -> bool {
+	print!("{}{}3. Proceed to Anchor test", IDENT, IDENT);
 
 	let parts: Vec<&str> = test_cmd.split_whitespace().collect();
 	let (prog1, prog2, arg) = (parts[0], parts[1], parts[2]);
@@ -182,5 +182,17 @@ pub fn anchor_tests(g: &Globals, test_cmd: &str, log_full_path: &str) {
 
 	let txt_output = String::from_utf8_lossy(&output.stdout);
 	let _ = fs::write(log_full_path, txt_output.to_string());
+
+	//sleep(Duration::from_secs(1));
+
+	if output.status.success() {
+		//println!("La commande s'est exécutée avec succès !");
+		println!(" ❌");
+		false
+	} else {
+		//println!("La commande a échoué avec le statut : {:?}", output.status);
+		println!(" ✅");
+		true
+	}
 
 }

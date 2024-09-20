@@ -78,7 +78,7 @@ pub fn main_toml_generation(
 
 pub fn main_toml_read(
 	g: &Globals,
-) -> std::io::Result<(MainConfig)> {
+) -> std::io::Result<MainConfig> {
 	let toml_file: String  = format!("{}/.mutatis/{}", g.fwd, "mutatis.toml");
 	let content: String    = fs::read_to_string(toml_file)?;
 	let config: MainConfig = toml::from_str(&content).unwrap();
@@ -127,7 +127,7 @@ pub fn mutation_toml_generation(
 pub fn mutation_toml_read(
 	g           : &Globals,
 	mutation_toml: &str
-) -> std::io::Result<(MutationConfig)> {
+) -> std::io::Result<MutationConfig> {
 	let content: String        = fs::read_to_string(mutation_toml)?;
 	let config: MutationConfig = toml::from_str(&content).unwrap();
 	//println!("{:#?}", config);

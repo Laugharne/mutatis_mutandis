@@ -255,6 +255,9 @@ pub fn cli_run(mut g: &Globals) {
 	let mutations_dir: String  = format!("{}/.mutatis/mutations/", g.fwd);
 	let mutations: Vec<String> = mutations_read_dir(&mutations_dir).unwrap();
 
+	let mut mutation_success: u16 = 0;
+	let mut mutation_fail: u16    = 0;
+
 	//println!("- {}", mutations_path.display());
 	//println!(":: {:?}", m);
 	for mutation in mutations {
@@ -293,7 +296,11 @@ pub fn cli_run(mut g: &Globals) {
 		// io::stdin().read_line(&mut buffer);
 
 		// tests --> log
-		anchor_tests(&g, &test_cmd, &log_full_path);
+		if anchor_tests(&g, &test_cmd, &log_full_path) == true {
+			mutation_success += 1;
+		} else {
+			mutation_fail += 1;
+		}
 
 		// restore original file --> src
 		let _ = fs::copy(
@@ -306,8 +313,13 @@ pub fn cli_run(mut g: &Globals) {
 
 	}
 
+	if mutation_success > 0 {
+		println!("{}✅ {}: {}", IDENT, "Success".green(), mutation_success);
+	}
 
-
+	if mutation_fail > 0 {
+		println!("{}❌ {}: {}", IDENT, "Fail".red(), mutation_fail);
+	}
 
 }
 
